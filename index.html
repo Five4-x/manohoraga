@@ -96,7 +96,7 @@
       letter-spacing: 1px;
     }
 
-    /* Botão de Editar Perfil (Oculto por padrão, aparece após login) */
+    /* Botão de Editar Perfil (Oculto por padrão) */
     .owner-edit-btn {
       display: none;
       background: #ff1e38;
@@ -214,7 +214,7 @@
       color: #0095f6;
     }
 
-    /* Botão POSTAR (Oculto por padrão, aparece após login) */
+    /* Botão POSTAR (Oculto por padrão) */
     .sidebar-post-btn {
       display: none;
       background: #0095f6;
@@ -234,24 +234,6 @@
 
     .sidebar-post-btn:hover {
       background: #0077c5;
-    }
-
-    /* Botão Admin Discreto no Rodapé da Sidebar */
-    .admin-trigger-box {
-      margin-top: 20px;
-      padding-top: 10px;
-      border-top: 1px solid rgba(255,255,255,0.08);
-      font-size: 11px;
-    }
-
-    .admin-trigger-box span {
-      color: #444;
-      cursor: pointer;
-      transition: color 0.2s;
-    }
-
-    .admin-trigger-box span:hover {
-      color: #888;
     }
 
     /* MODAL DE ZOOM DE IMAGEM */
@@ -479,7 +461,7 @@
         </div>
       </div>
 
-      <!-- Botão de Editar Perfil (Fica oculto para visitantes) -->
+      <!-- Botão de Editar Perfil (Oculto por padrão) -->
       <button class="owner-edit-btn" id="editBtn" onclick="openEditProfileModal()">⚙️ Editar Perfil</button>
     </div>
 
@@ -515,15 +497,10 @@
           <a class="nav-item" onclick="switchTab('videos', 'Videos')">Videos</a>
           <a class="nav-item" onclick="switchTab('fotos', 'Fotos')">Fotos</a>
           
-          <!-- Botão Postar (Fica oculto para visitantes) -->
+          <!-- Botão Postar (Oculto por padrão) -->
           <button class="sidebar-post-btn" id="postBtn" onclick="openPostModal()">
             <span>➕</span> Postar
           </button>
-        </div>
-
-        <!-- Atalho super discreto no rodapé para abrir o painel de senha -->
-        <div class="admin-trigger-box">
-          <span onclick="requestAdminAccess()">.</span>
         </div>
       </div>
 
@@ -619,8 +596,7 @@
     let currentTab = 'fotos';
 
     window.onload = function() {
-      // O site inicia limpo para todos os visitantes.
-      // Se já tinhas feito login antes neste navegador, ele lembra de ti automaticamente!
+      // Se já fizeste login neste navegador antes, ele lembra de ti automaticamente
       if (localStorage.getItem('manohoraga_admin') === 'true') {
         enableAdminMode();
       }
@@ -628,13 +604,44 @@
       renderGallery('fotos');
     };
 
-    function requestAdminAccess() {
-      const senha = prompt("Digite a senha de administrador:");
-      if (senha === "manohoraga") {
+    // ATALHO SECRETO DO TECLADO: Ctrl + Seta Baixo + Seta Cima
+    let ctrlPressed = false;
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Control') ctrlPressed = true;
+
+      // Se apertou Ctrl e Seta para Baixo e depois Seta para Cima (ou juntas)
+      if (ctrlPressed) {
+        if (e.key === 'ArrowDown') {
+          window.downPressed = true;
+        }
+        if (e.key === 'ArrowUp' && window.downPressed) {
+          window.downPressed = false;
+          triggerSecretAdminLogin();
+        }
+      }
+    });
+
+    document.addEventListener('keyup', function(e) {
+      if (e.key === 'Control') ctrlPressed = false;
+    });
+
+    function triggerSecretAdminLogin() {
+      const user = prompt("Digite o nome de usuário:");
+      if (user === null) return;
+
+      if (user !== "casthiel") {
+        alert("Usuário incorreto!");
+        return;
+      }
+
+      const senha = prompt("Digite a senha:");
+      if (senha === null) return;
+
+      if (senha === "12345678910casthielkymirgabriel@") {
         localStorage.setItem('manohoraga_admin', 'true');
         enableAdminMode();
-        alert("Modo de edição ativado com sucesso!");
-      } else if (senha !== null) {
+        alert("Modo administrador ativado com sucesso!");
+      } else {
         alert("Senha incorreta!");
       }
     }
