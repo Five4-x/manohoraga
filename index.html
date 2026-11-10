@@ -16,7 +16,6 @@
       background-color: #000000;
       color: #ffffff;
       padding: 30px 20px;
-      /* Fundo ajustado para ficar mais claro (apenas 40% de escurecimento em vez de 80%) */
       background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('');
       background-size: cover;
       background-position: center;
@@ -97,8 +96,9 @@
       letter-spacing: 1px;
     }
 
-    /* Botão de Editar Perfil */
+    /* Botão de Editar Perfil (Oculto por padrão para visitantes) */
     .owner-edit-btn {
+      display: none;
       background: #ff1e38;
       color: #fff;
       border: none;
@@ -214,8 +214,9 @@
       color: #0095f6;
     }
 
-    /* Botão POSTAR visível no menu lateral */
+    /* Botão POSTAR (Oculto por padrão, aparece só para o admin) */
     .sidebar-post-btn {
+      display: none;
       background: #0095f6;
       color: #ffffff;
       border: none;
@@ -225,7 +226,6 @@
       border-radius: 4px;
       cursor: pointer;
       margin-top: 5px;
-      display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
@@ -462,7 +462,7 @@
       </div>
 
       <!-- Botão de Editar Perfil -->
-      <button class="owner-edit-btn" onclick="openEditProfileModal()">⚙️ Editar Perfil</button>
+      <button class="owner-edit-btn" id="editBtn" onclick="openEditProfileModal()">⚙️ Editar Perfil</button>
     </div>
 
     <!-- Layout em Duas Colunas -->
@@ -497,8 +497,8 @@
           <a class="nav-item" onclick="switchTab('videos', 'Videos')">Videos</a>
           <a class="nav-item" onclick="switchTab('fotos', 'Fotos')">Fotos</a>
           
-          <!-- Botão Postar visível para você -->
-          <button class="sidebar-post-btn" onclick="openPostModal()">
+          <!-- Botão Postar -->
+          <button class="sidebar-post-btn" id="postBtn" onclick="openPostModal()">
             <span>➕</span> Postar
           </button>
         </div>
@@ -596,6 +596,13 @@
     let currentTab = 'fotos';
 
     window.onload = function() {
+      // SISTEMA DE SEGURANÇA: Libera os botões de edição apenas se usar ?admin=manohoraga no link
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('admin') === 'manohoraga') {
+        document.getElementById('editBtn').style.display = 'block';
+        document.getElementById('postBtn').style.display = 'flex';
+      }
+
       renderGallery('fotos');
     };
 
