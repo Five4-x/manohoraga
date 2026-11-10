@@ -96,7 +96,7 @@
       letter-spacing: 1px;
     }
 
-    /* Botão de Editar Perfil (Oculto por padrão, ativado via JS para o dono) */
+    /* Botão de Editar Perfil (Oculto por padrão, aparece após login) */
     .owner-edit-btn {
       display: none;
       background: #ff1e38;
@@ -214,7 +214,7 @@
       color: #0095f6;
     }
 
-    /* Botão POSTAR (Oculto por padrão, ativado via JS para o dono) */
+    /* Botão POSTAR (Oculto por padrão, aparece após login) */
     .sidebar-post-btn {
       display: none;
       background: #0095f6;
@@ -236,22 +236,22 @@
       background: #0077c5;
     }
 
-    /* Link para Visitante alternar / ver o site público */
-    .visitor-link-box {
-      margin-top: 15px;
-      padding-top: 15px;
-      border-top: 1px solid rgba(255,255,255,0.1);
-      font-size: 12px;
+    /* Botão Admin Discreto no Rodapé da Sidebar */
+    .admin-trigger-box {
+      margin-top: 20px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      font-size: 11px;
     }
 
-    .visitor-link-box a {
+    .admin-trigger-box span {
+      color: #444;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .admin-trigger-box span:hover {
       color: #888;
-      text-decoration: none;
-    }
-
-    .visitor-link-box a:hover {
-      color: #fff;
-      text-decoration: underline;
     }
 
     /* MODAL DE ZOOM DE IMAGEM */
@@ -479,7 +479,7 @@
         </div>
       </div>
 
-      <!-- Botão de Editar Perfil -->
+      <!-- Botão de Editar Perfil (Fica oculto para visitantes) -->
       <button class="owner-edit-btn" id="editBtn" onclick="openEditProfileModal()">⚙️ Editar Perfil</button>
     </div>
 
@@ -515,15 +515,15 @@
           <a class="nav-item" onclick="switchTab('videos', 'Videos')">Videos</a>
           <a class="nav-item" onclick="switchTab('fotos', 'Fotos')">Fotos</a>
           
-          <!-- Botão Postar -->
+          <!-- Botão Postar (Fica oculto para visitantes) -->
           <button class="sidebar-post-btn" id="postBtn" onclick="openPostModal()">
             <span>➕</span> Postar
           </button>
         </div>
 
-        <!-- Link para testar/ver como visitante -->
-        <div class="visitor-link-box">
-          <a href="https://five4-x.github.io/manohoraga/" target="_blank">🔗 Ver modo Visitante</a>
+        <!-- Atalho super discreto no rodapé para abrir o painel de senha -->
+        <div class="admin-trigger-box">
+          <span onclick="requestAdminAccess()">.</span>
         </div>
       </div>
 
@@ -619,16 +619,30 @@
     let currentTab = 'fotos';
 
     window.onload = function() {
-      // SISTEMA INTELIGENTE: Como este é o teu computador principal onde gerencias o site, 
-      // os botões abrem automaticamente para ti. Podes usar ?visitor=1 no link se quiseres testar como visitante.
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('visitor') !== '1') {
-        document.getElementById('editBtn').style.display = 'flex';
-        document.getElementById('postBtn').style.display = 'flex';
+      // O site inicia limpo para todos os visitantes.
+      // Se já tinhas feito login antes neste navegador, ele lembra de ti automaticamente!
+      if (localStorage.getItem('manohoraga_admin') === 'true') {
+        enableAdminMode();
       }
 
       renderGallery('fotos');
     };
+
+    function requestAdminAccess() {
+      const senha = prompt("Digite a senha de administrador:");
+      if (senha === "manohoraga") {
+        localStorage.setItem('manohoraga_admin', 'true');
+        enableAdminMode();
+        alert("Modo de edição ativado com sucesso!");
+      } else if (senha !== null) {
+        alert("Senha incorreta!");
+      }
+    }
+
+    function enableAdminMode() {
+      document.getElementById('editBtn').style.display = 'flex';
+      document.getElementById('postBtn').style.display = 'flex';
+    }
 
     function closeAd() {
       document.getElementById('adModal').style.display = 'none';
