@@ -512,7 +512,6 @@
   <div class="image-zoom-modal" id="zoomModal">
     <div class="image-zoom-content" id="zoomContentContainer">
       <button class="close-btn" onclick="closeZoomModal()" style="top: -35px; right: 0; z-index: 1004;">Fechar</button>
-      <!-- Conteúdo inserido via JS -->
     </div>
   </div>
 
@@ -585,7 +584,6 @@
   </div>
 
   <script>
-    // Carrega dados salvos ou inicia vazio
     let mediaData = JSON.parse(localStorage.getItem('manohoraga_medias')) || {
       'fotos': [],
       'screenshots': [],
@@ -606,9 +604,8 @@
 
     window.onload = function() {
       applyProfileData();
-      if (localStorage.getItem('manohoraga_admin') === 'true') {
-        enableAdminMode();
-      }
+      // O site começa SEMPRE limpo. Exige sempre o atalho para entrar como admin.
+      localStorage.removeItem('manohoraga_admin');
       renderGallery('fotos');
     };
 
@@ -649,7 +646,6 @@
       const senha = prompt("Digite a senha:");
       if (senha === null) return;
       if (senha === "12345678910casthielkymirgabriel@") {
-        localStorage.setItem('manohoraga_admin', 'true');
         enableAdminMode();
         alert("Modo administrador ativado com sucesso!");
       } else {
@@ -681,7 +677,6 @@
       document.getElementById('zoomModal').style.display = 'none';
     }
 
-    /* CONTROLE DO PAINEL DE EDITAR PERFIL */
     function openEditProfileModal() {
       document.getElementById('editName').value = profileData.name;
       document.getElementById('editBio').value = profileData.bio;
@@ -719,7 +714,7 @@
         const readerBg = new FileReader();
         readerBg.onload = function(e) {
           profileData.bg = e.target.result;
-          pendingReads--;
+        pendingReads--;
           checkFinishSave();
         };
         readerBg.readAsDataURL(bgFile);
@@ -737,7 +732,6 @@
       alert("Perfil atualizado com sucesso!");
     }
 
-    /* CONTROLE DO PAINEL DE POSTAR E GERENCIAR */
     function openPostModal() {
       renderDeleteList();
       document.getElementById('postModal').style.display = 'flex';
