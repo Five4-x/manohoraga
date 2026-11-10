@@ -133,7 +133,7 @@
       margin-top: 15px;
     }
 
-    .gallery-item img {
+    .gallery-item img, .gallery-item video {
       width: 100%;
       height: 140px;
       object-fit: cover;
@@ -144,7 +144,7 @@
       transition: transform 0.2s, border-color 0.2s;
     }
 
-    .gallery-item img:hover {
+    .gallery-item img:hover, .gallery-item video:hover {
       transform: scale(1.03);
       border-color: #ff1e38;
     }
@@ -257,7 +257,7 @@
       text-align: center;
     }
 
-    .image-zoom-content img {
+    .image-zoom-content img, .image-zoom-content video {
       width: 100%;
       max-height: 80vh;
       object-fit: contain;
@@ -451,7 +451,7 @@
     <!-- Topo do Perfil -->
     <div class="profile-top">
       <div class="profile-left-side">
-        <img src="https://via.placeholder.com/65/222/fff?text=M" alt="Avatar" class="profile-avatar" id="avatarImg" onclick="openZoomModal(this.src)" title="Clique para ver a foto de perto">
+        <img src="https://via.placeholder.com/65/222/fff?text=M" alt="Avatar" class="profile-avatar" id="avatarImg" onclick="openZoomModal(this.src, 'img')" title="Clique para ver a foto de perto">
         <div class="profile-info">
           <div class="name-row">
             <h1 class="profile-name" id="displayName">Manohoraga</h1>
@@ -508,11 +508,11 @@
 
   </div>
 
-  <!-- TELA DE ZOOM PARA FOTO -->
+  <!-- TELA DE ZOOM PARA FOTO/VÍDEO -->
   <div class="image-zoom-modal" id="zoomModal">
-    <div class="image-zoom-content">
-      <button class="close-btn" onclick="closeZoomModal()" style="top: -35px; right: 0;">Fechar</button>
-      <img id="modalZoomImg" src="" alt="Imagem Ampliada">
+    <div class="image-zoom-content" id="zoomContentContainer">
+      <button class="close-btn" onclick="closeZoomModal()" style="top: -35px; right: 0; z-index: 1004;">Fechar</button>
+      <!-- Conteúdo inserido via JS -->
     </div>
   </div>
 
@@ -585,35 +585,49 @@
   </div>
 
   <script>
-    let mediaData = {
+    // Carrega dados salvos ou inicia vazio
+    let mediaData = JSON.parse(localStorage.getItem('manohoraga_medias')) || {
       'fotos': [],
       'screenshots': [],
       'videos': [],
       'games': [],
       'inventory': []
     };
+
+    let profileData = JSON.parse(localStorage.getItem('manohoraga_profile')) || {
+      name: 'Manohoraga',
+      bio: '† 𝔐𝔞𝔫𝔬𝔥𝔬𝔯𝔞𝔤𝔞 †',
+      status: 'Currently Offline',
+      avatar: 'https://via.placeholder.com/65/222/fff?text=M',
+      bg: ''
+    };
     
     let currentTab = 'fotos';
 
     window.onload = function() {
-      // Se já fizeste login neste navegador antes, ele lembra de ti automaticamente
+      applyProfileData();
       if (localStorage.getItem('manohoraga_admin') === 'true') {
         enableAdminMode();
       }
-
       renderGallery('fotos');
     };
 
-    // ATALHO SECRETO DO TECLADO: Ctrl + Seta Baixo + Seta Cima
+    function applyProfileData() {
+      document.getElementById('displayName').innerText = profileData.name;
+      document.getElementById('displayBio').innerText = profileData.bio;
+      document.getElementById('displayStatus').innerText = profileData.status;
+      document.getElementById('avatarImg').src = profileData.avatar;
+      if (profileData.bg) {
+        document.body.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('${profileData.bg}')`;
+      }
+    }
+
+    // ATALHO SECRETO: Ctrl + Seta Baixo + Seta Cima
     let ctrlPressed = false;
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Control') ctrlPressed = true;
-
-      // Se apertou Ctrl e Seta para Baixo e depois Seta para Cima (ou juntas)
       if (ctrlPressed) {
-        if (e.key === 'ArrowDown') {
-          window.downPressed = true;
-        }
+        if (e.key === 'ArrowDown') window.downPressed = true;
         if (e.key === 'ArrowUp' && window.downPressed) {
           window.downPressed = false;
           triggerSecretAdminLogin();
@@ -628,15 +642,12 @@
     function triggerSecretAdminLogin() {
       const user = prompt("Digite o nome de usuário:");
       if (user === null) return;
-
       if (user !== "casthiel") {
         alert("Usuário incorreto!");
         return;
       }
-
       const senha = prompt("Digite a senha:");
       if (senha === null) return;
-
       if (senha === "12345678910casthielkymirgabriel@") {
         localStorage.setItem('manohoraga_admin', 'true');
         enableAdminMode();
@@ -655,8 +666,13 @@
       document.getElementById('adModal').style.display = 'none';
     }
 
-    function openZoomModal(src) {
-      document.getElementById('modalZoomImg').src = src;
+    function openZoomModal(src, type) {
+      const container = document.getElementById('zoomContentContainer');
+      if (type === 'video') {
+        container.innerHTML = `<button class="close-btn" onclick="closeZoomModal()" style="top: -35px; right: 0; z-index: 1004;">Fechar</button><video src="${src}" controls autoplay style="width:100%; max-height:80vh; border-radius:8px;"></video>`;
+      } else {
+        container.innerHTML = `<button class="close-btn" onclick="closeZoomModal()" style="top: -35px; right: 0; z-index: 1004;">Fechar</button><img src="${src}" alt="Zoom">`;
+      }
       document.getElementById('zoomModal').style.display = 'flex';
       document.getElementById('adModal').style.display = 'flex';
     }
@@ -667,6 +683,9 @@
 
     /* CONTROLE DO PAINEL DE EDITAR PERFIL */
     function openEditProfileModal() {
+      document.getElementById('editName').value = profileData.name;
+      document.getElementById('editBio').value = profileData.bio;
+      document.getElementById('editStatus').value = profileData.status;
       document.getElementById('editProfileModal').style.display = 'flex';
     }
 
@@ -675,34 +694,47 @@
     }
 
     function saveProfileChanges() {
-      const newName = document.getElementById('editName').value;
-      const newBio = document.getElementById('editBio').value;
-      const newStatus = document.getElementById('editStatus').value;
+      profileData.name = document.getElementById('editName').value || profileData.name;
+      profileData.bio = document.getElementById('editBio').value || profileData.bio;
+      profileData.status = document.getElementById('editStatus').value || profileData.status;
+
       const avatarFile = document.getElementById('uploadAvatarFile').files[0];
       const bgFile = document.getElementById('uploadBgFile').files[0];
 
-      if (newName) document.getElementById('displayName').innerText = newName;
-      if (newBio) document.getElementById('displayBio').innerText = newBio;
-      if (newStatus) document.getElementById('displayStatus').innerText = newStatus;
+      let pendingReads = 0;
 
       if (avatarFile) {
+        pendingReads++;
         const reader = new FileReader();
         reader.onload = function(e) {
-          document.getElementById('avatarImg').src = e.target.result;
+          profileData.avatar = e.target.result;
+          pendingReads--;
+          checkFinishSave();
         };
         reader.readAsDataURL(avatarFile);
       }
 
       if (bgFile) {
+        pendingReads++;
         const readerBg = new FileReader();
         readerBg.onload = function(e) {
-          document.body.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('${e.target.result}')`;
+          profileData.bg = e.target.result;
+          pendingReads--;
+          checkFinishSave();
         };
         readerBg.readAsDataURL(bgFile);
       }
 
+      if (pendingReads === 0) {
+        checkFinishSave();
+      }
+    }
+
+    function checkFinishSave() {
+      localStorage.setItem('manohoraga_profile', JSON.stringify(profileData));
+      applyProfileData();
       closeEditProfileModal();
-      alert("Perfil e plano de fundo atualizados com sucesso!");
+      alert("Perfil atualizado com sucesso!");
     }
 
     /* CONTROLE DO PAINEL DE POSTAR E GERENCIAR */
@@ -726,13 +758,16 @@
 
       const reader = new FileReader();
       reader.onload = function(e) {
-        mediaData[category].push(e.target.result);
+        const isVideo = mediaFile.type.startsWith('video');
+        mediaData[category].push({ src: e.target.result, type: isVideo ? 'video' : 'img' });
         
+        localStorage.setItem('manohoraga_medias', JSON.stringify(mediaData));
+
         if (currentTab === category) {
           renderGallery(currentTab);
         }
 
-        alert("Mídia postada com sucesso na categoria selecionada!");
+        alert("Mídia postada com sucesso!");
         document.getElementById('uploadMediaFile').value = '';
         renderDeleteList();
         closePostModal();
@@ -764,6 +799,7 @@
 
     function deleteMedia(category, index) {
       mediaData[category].splice(index, 1);
+      localStorage.setItem('manohoraga_medias', JSON.stringify(mediaData));
       renderDeleteList();
       renderGallery(currentTab);
     }
@@ -784,16 +820,22 @@
       }
 
       grid.innerHTML = '';
-      items.forEach(src => {
-        grid.innerHTML += `
-          <div class="gallery-item">
-            <img src="${src}" onclick="openZoomModal(this.src)" alt="Mídia">
-          </div>
-        `;
+      items.forEach(item => {
+        if (item.type === 'video') {
+          grid.innerHTML += `
+            <div class="gallery-item">
+              <video src="${item.src}" onclick="openZoomModal('${item.src}', 'video')"></video>
+            </div>
+          `;
+        } else {
+          grid.innerHTML += `
+            <div class="gallery-item">
+              <img src="${item.src}" onclick="openZoomModal('${item.src}', 'img')" alt="Mídia">
+            </div>
+          `;
+        }
       });
     }
-
-    renderGallery('fotos');
   </script>
 
 </body>
